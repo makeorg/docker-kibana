@@ -1,4 +1,4 @@
-FROM kibana:4.5
+FROM kibana:4.6.6
 
 RUN apt-get update && apt-get install patch
 
