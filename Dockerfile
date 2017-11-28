@@ -1,13 +1,14 @@
-FROM kibana:4.6.6
+FROM kibana:5.6.3
 
 RUN apt-get update && apt-get install patch
+RUN apt-get install zip unzip
 
 COPY ./logtrail.patch /tmp/logtrail.patch
 
-RUN wget -qO- https://github.com/sivasamyk/logtrail/releases/download/0.1.14/logtrail-4.x-0.1.14.tar.gz | tar xz -C /tmp/
+RUN wget -qO /tmp/logtrail.zip https://github.com/sivasamyk/logtrail/releases/download/v0.1.23/logtrail-5.6.3-0.1.23.zip
+RUN unzip -q /tmp/logtrail.zip -d /tmp/logtrail
 RUN patch -d /tmp/ -p0 < /tmp/logtrail.patch
-RUN tar czf /tmp/logtrail.tar.gz -C /tmp/logtrail .
+RUN cd /tmp/logtrail && zip -r /tmp/logtrail.zip kibana
 
-RUN kibana plugin -i kibana-ansi -u https://github.com/sabre1041/kibana-ansi/archive/master.zip
-RUN kibana plugin -i logtrail -u file:////tmp/logtrail.tar.gz
-RUN ln -s -f /opt/kibana/config/logtrail.json /opt/kibana/installedPlugins/logtrail/logtrail.json
+RUN kibana-plugin install file:///tmp/logtrail.zip
+RUN ln -s -f /etc/kibana/logtrail.json /usr/share/kibana/plugins/logtrail/logtrail.json

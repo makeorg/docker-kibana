@@ -1,16 +1,16 @@
-diff -Naur logtrail-4.x-0.1.14/public/app.js logtrail/public/app.js
---- logtrail-4.x-0.1.14/public/app.js	2017-06-05 12:27:33.000000000 +0200
-+++ logtrail/public/app.js	2017-10-26 18:23:15.443001062 +0200
-@@ -117,7 +117,7 @@
-           doSearch(null, 'desc', ['overwrite','reverse'], null);
-         } else {
-           var timestamp = Date.create($scope.pickedDateTime).getTime();
--          doSearch('gt','asc', ['overwrite','scrollToTop'],timestamp);
-+          doSearch('gt','desc', ['overwrite','scrollToTop'],timestamp);
-         }
-         startTailTimer();
-       } else {
-@@ -345,7 +345,7 @@
+diff -Naur logtrail-5.6.3-0.1.23/kibana/logtrail/public/app.js logtrail/kibana/logtrail/public/app.js
+--- logtrail-5.6.3-0.1.23/kibana/logtrail/public/app.js	2017-10-22 11:16:52.000000000 +0200
++++ logtrail/kibana/logtrail/public/app.js	2017-11-27 17:27:04.943050259 +0100
+@@ -101,7 +101,7 @@
+       doSearch(null, 'desc', ['overwrite','reverse'], null);
+     } else {
+       var timestamp = Date.create($scope.pickedDateTime).getTime();
+-      doSearch('gt','asc', ['overwrite','scrollToTop'],timestamp);
++      doSearch('gt','desc', ['overwrite','scrollToTop'],timestamp);
+     }
+     startTailTimer();
+   }
+@@ -319,7 +319,7 @@
  
      if ($scope.pickedDateTime != null) {
        var timestamp = Date.create($scope.pickedDateTime).getTime();
@@ -19,25 +19,16 @@ diff -Naur logtrail-4.x-0.1.14/public/app.js logtrail/public/app.js
      } else {
        doSearch(null,'desc', ['overwrite','reverse'],null);
      }
-@@ -450,7 +450,7 @@
-   };
- 
-   $scope.onProgramClick = function (program) {
--    $scope.userSearchText = selected_index_config.fields.mapping['program'] + '.raw: "' + program + '"';
-+    $scope.userSearchText = selected_index_config.fields.mapping['program'] + ': "' + program + '"';
-     $scope.onSearchClick();
-   };
-   
-@@ -475,7 +475,7 @@
-       //When scroll bar search bottom
-       if (angular.element($window).scrollTop() + angular.element($window).height() === angular.element($document).height()) {
+@@ -444,7 +444,7 @@
+       var docHeight = angular.element($document).height();
+       if (scrollPos >= docHeight) {
          if ($scope.events.length > 0) {
 -          doSearch('gte', 'asc', ['append','scrollToView'], lastEventTime - ( selected_index_config.es_index_time_offset_in_seconds * 1000 ));
 +          doSearch('gte', 'desc', ['append','scrollToView'], lastEventTime - ( selected_index_config.es_index_time_offset_in_seconds * 1000 ));
          }
          $scope.$apply(updateLiveTailStatus('Live'));
        } else {
-@@ -505,7 +505,7 @@
+@@ -474,7 +474,7 @@
        if (lastEventTime) {
          adjustedLastEventTime = lastEventTime - ( selected_index_config.es_index_time_offset_in_seconds * 1000 );
        }
@@ -46,43 +37,10 @@ diff -Naur logtrail-4.x-0.1.14/public/app.js logtrail/public/app.js
      }
    };
  
-diff -Naur logtrail-4.x-0.1.14/server/routes/server.js logtrail/server/routes/server.js
---- logtrail-4.x-0.1.14/server/routes/server.js	2017-06-05 12:19:44.000000000 +0200
-+++ logtrail/server/routes/server.js	2017-10-26 18:22:25.539668259 +0200
-@@ -134,8 +134,8 @@
-           term : {
-           }
-         };
--        var rawHostField = selected_config.fields.mapping.hostname + ".raw";
--        termQuery.term[rawHostField] = request.payload.hostname;
-+        var hostField = selected_config.fields.mapping.hostname;
-+        termQuery.term[hostField] = request.payload.hostname;
-         searchRequest.body.query.filtered.filter.bool.must.push(termQuery);
-       }
- 
-@@ -163,6 +163,7 @@
-         range[selected_config.fields.mapping.timestamp].format = 'epoch_millis';
-         searchRequest.body.query.filtered.filter.bool.must.push(rangeQuery);
-       }
-+
-       //console.log(JSON.stringify(searchRequest));
-       callWithRequest(request,'search',searchRequest).then(function (resp) {
-         reply({
-@@ -200,7 +201,7 @@
-           }          
-         }        
-       }
--      var rawHostField = selected_config.fields.mapping.hostname + ".raw";
-+      var hostField = selected_config.fields.mapping.hostname;
-       var hostAggRequest = {
-         index: selected_config.es.default_index,
-         body : {
-@@ -208,7 +209,7 @@
-           aggs: {
-             hosts: {
-               terms: {
--                field: rawHostField,
-+                field: hostField,
-                 size: selected_config.max_hosts
-               }
-             }
+@@ -560,4 +560,4 @@
+       });
+     }
+   }
+-});
+\ No newline at end of file
++});
